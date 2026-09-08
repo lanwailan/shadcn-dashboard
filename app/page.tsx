@@ -66,9 +66,13 @@ const navigation = [
   ...dimensions,
 ];
 function AppSidebar({ page, go }: { page: string; go: (id: string) => void }) {
-  const { setOpenMobile } = useSidebar();
+  const { setOpenMobile, state, isMobile } = useSidebar();
   return (
-    <Sidebar collapsible="icon" className="app-sidebar">
+    <Sidebar
+      collapsible="icon"
+      className="app-sidebar"
+      data-collapsed={state === 'collapsed' && !isMobile}
+    >
       <SidebarHeader>
         <div className="sidebar-brand">
           <span className="brand-icon">
@@ -89,6 +93,7 @@ function AppSidebar({ page, go }: { page: string; go: (id: string) => void }) {
                 <SidebarMenuButton
                   isActive={page === 'overview'}
                   tooltip="数据总览"
+                  aria-label="数据总览"
                   onClick={() => {
                     go('overview');
                     setOpenMobile(false);
@@ -110,6 +115,7 @@ function AppSidebar({ page, go }: { page: string; go: (id: string) => void }) {
                   <SidebarMenuButton
                     isActive={page === n.id}
                     tooltip={n.label}
+                    aria-label={n.label}
                     onClick={() => {
                       go(n.id);
                       setOpenMobile(false);
@@ -185,7 +191,7 @@ export default function Home() {
     <TooltipProvider>
       <SidebarProvider>
         <AppSidebar page={page} go={go} />
-        <SidebarInset>
+        <SidebarInset className="min-w-0">
           <header className="admin-header">
             <div className="header-left">
               <SidebarTrigger aria-label="展开或收起导航" />

@@ -1224,18 +1224,24 @@ h3 {
   background: var(--muted);
   font-weight: 500;
 }
-.app-sidebar[data-state='collapsed'] .sidebar-brand-text,
-.app-sidebar[data-state='collapsed'] .nav-count {
+.app-sidebar[data-collapsed='true'] .sidebar-brand-text,
+.app-sidebar[data-collapsed='true'] [data-slot='sidebar-menu-button'] > span {
   display: none;
 }
-.app-sidebar[data-state='collapsed'] .sidebar-brand {
+.app-sidebar[data-collapsed='true'] .sidebar-brand {
   padding: 10px 0;
+  justify-content: center;
 }
-.app-sidebar[data-state='collapsed'] [data-slot='sidebar-group'] {
+.app-sidebar[data-collapsed='true'] [data-slot='sidebar-group'] {
   padding-inline: 7px;
 }
-.app-sidebar[data-state='collapsed'] .sidebar-user {
+.app-sidebar[data-collapsed='true'] .sidebar-user {
   padding: 10px 0;
+  justify-content: center;
+}
+.app-sidebar[data-collapsed='true'] .sidebar-user .avatar {
+  width: 32px;
+  height: 32px;
 }
 .table-panel td {
   padding-top: 14px;
