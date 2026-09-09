@@ -137,3 +137,7 @@ export const mockPlatformAdapter: PlatformAdapter = {
     };
   },
 };
+
+// Application binding. Replace this single export with an HTTP implementation
+// when the Go control API is available; UI components only depend on PlatformAdapter.
+export const platformAdapter: PlatformAdapter = mockPlatformAdapter;

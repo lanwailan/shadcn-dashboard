@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://insight.internal/schemas/connector-definition.schema.json",
+  "title": "Insight Studio Connector Definition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "name",
+    "category",
+    "description",
+    "fields",
+    "capabilities"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*$"
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "category": {
+      "enum": ["api", "database", "saas", "event", "file", "compute"]
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "label", "type"],
+        "properties": {
+          "key": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*$" },
+          "label": { "type": "string", "minLength": 1 },
+          "type": {
+            "enum": ["text", "url", "number", "select", "credential"]
+          },
+          "placeholder": { "type": "string" },
+          "required": { "type": "boolean" },
+          "help": { "type": "string" },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["label", "value"],
+              "properties": {
+                "label": { "type": "string" },
+                "value": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preview", "schemaDiscovery", "incrementalSync", "realtime"],
+      "properties": {
+        "preview": { "type": "boolean" },
+        "schemaDiscovery": { "type": "boolean" },
+        "incrementalSync": { "type": "boolean" },
+        "realtime": { "type": "boolean" }
+      }
+    }
+  }
+}

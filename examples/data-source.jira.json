@@ -1,12 +1,16 @@
 {
   "id": "jira_test_cases",
+  "name": "Jira CICT Test Cases",
   "connector": "jira",
   "config": {
-    "baseUrl": "https://jira.example.com",
+    "endpoint": "https://jira.example.com",
     "jql": "project = CICT AND type = Test",
-    "authRef": "jira-prod-token"
+    "authRef": "jira-prod-token",
+    "transformRef": "normalize_test_cases_v1"
   },
+  "owner": "测试平台组",
+  "syncMode": "incremental",
   "schedule": "*/10 * * * *",
-  "transform": "normalize_test_cases_v1",
+  "cursorField": "updatedAt",
   "outputDataset": "test_case_status"
 }

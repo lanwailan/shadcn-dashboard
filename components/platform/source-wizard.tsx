@@ -41,7 +41,7 @@ import {
   connectorDefinitions,
   getConnectorDefinition,
 } from '@/lib/connector-definitions';
-import { mockPlatformAdapter } from '@/lib/platform-api';
+import { platformAdapter } from '@/lib/platform-api';
 import type {
   ConnectionTestResult,
   ConnectorType,
@@ -281,7 +281,7 @@ export function SourceWizard({
     }
     setBusy(true);
     setError('');
-    const result = await mockPlatformAdapter.testConnection(draft);
+    const result = await platformAdapter.testConnection(draft);
     setBusy(false);
     setTestResult(result);
     if (result.ok) setStep(2);
@@ -290,7 +290,7 @@ export function SourceWizard({
   const loadPreview = async () => {
     setBusy(true);
     setError('');
-    const result = await mockPlatformAdapter.previewSource(draft);
+    const result = await platformAdapter.previewSource(draft);
     setPreview(result);
     setDraft({
       ...draft,
@@ -323,7 +323,7 @@ export function SourceWizard({
     }
     if (step === 4) return setStep(5);
     setBusy(true);
-    const source = await mockPlatformAdapter.publishSource(draft);
+    const source = await platformAdapter.publishSource(draft);
     onPublished(source);
     close();
   };

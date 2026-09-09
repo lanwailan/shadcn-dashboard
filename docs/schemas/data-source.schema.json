@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://insight.internal/schemas/data-source.schema.json",
+  "title": "Insight Studio Data Source",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "connector",
+    "config",
+    "outputDataset",
+    "owner",
+    "syncMode",
+    "schedule"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+    "name": { "type": "string", "minLength": 1 },
+    "connector": {
+      "enum": [
+        "http",
+        "mysql",
+        "postgresql",
+        "jira",
+        "feishu",
+        "gitlab",
+        "file",
+        "webhook",
+        "agent",
+        "script"
+      ]
+    },
+    "config": {
+      "type": "object",
+      "required": ["endpoint"],
+      "properties": {
+        "endpoint": { "type": "string", "minLength": 1 },
+        "authRef": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": { "type": "string" }
+    },
+    "outputDataset": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "owner": { "type": "string", "minLength": 1 },
+    "syncMode": { "enum": ["full", "incremental", "realtime"] },
+    "schedule": { "type": "string", "minLength": 1 },
+    "cursorField": { "type": "string" },
+    "status": { "enum": ["healthy", "warning", "disabled"] },
+    "lastRun": { "type": "string" },
+    "successRate": { "type": "number", "minimum": 0, "maximum": 100 },
+    "schema": {
+      "type": "array",
+      "items": { "$ref": "dataset.schema.json#/$defs/field" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "syncMode": { "const": "incremental" } },
+        "required": ["syncMode"]
+      },
+      "then": { "required": ["cursorField"] }
+    }
+  ]
+}
