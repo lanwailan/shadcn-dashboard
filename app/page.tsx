@@ -8,12 +8,17 @@ import {
   Command,
   Database,
   Download,
+  HelpCircle,
   LayoutDashboard,
   Moon,
+  Plus,
   PlugZap,
+  Search,
+  Sparkles,
   Sun,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Sidebar,
   SidebarContent,
@@ -64,6 +69,7 @@ function PlatformSidebar({
   go: (id: PageId) => void;
 }) {
   const { setOpenMobile, state, isMobile } = useSidebar();
+  const [query, setQuery] = useState('');
   const renderGroup = (group: 'platform' | 'display') => (
     <SidebarGroup>
       <SidebarGroupLabel>
@@ -72,7 +78,11 @@ function PlatformSidebar({
       <SidebarGroupContent>
         <SidebarMenu>
           {navigation
-            .filter((item) => item.group === group)
+            .filter(
+              (item) =>
+                item.group === group &&
+                item.label.toLowerCase().includes(query.toLowerCase()),
+            )
             .map((item) => (
               <SidebarMenuItem key={item.id}>
                 <SidebarMenuButton
@@ -96,6 +106,7 @@ function PlatformSidebar({
   );
   return (
     <Sidebar
+      variant="inset"
       collapsible="icon"
       className="app-sidebar"
       data-collapsed={state === 'collapsed' && !isMobile}
@@ -110,12 +121,32 @@ function PlatformSidebar({
             <p>数据接入与编排平台</p>
           </div>
         </div>
+        <div className="sidebar-search search">
+          <Search size={15} />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="搜索功能..."
+            aria-label="搜索导航"
+          />
+          <kbd>⌘K</kbd>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         {renderGroup('platform')}
         {renderGroup('display')}
       </SidebarContent>
       <SidebarFooter>
+        <div className="sidebar-promo">
+          <span>
+            <Sparkles size={16} />
+          </span>
+          <strong>创建你的数据大屏</strong>
+          <p>选择 Dataset，几分钟内完成编排。</p>
+          <Button size="sm" onClick={() => go('dashboards')}>
+            开始编排
+          </Button>
+        </div>
         <div className="sidebar-user">
           <span className="avatar">RD</span>
           <div className="sidebar-brand-text">
@@ -123,6 +154,10 @@ function PlatformSidebar({
             <p>管理员工作空间</p>
           </div>
         </div>
+        <button className="sidebar-help" onClick={() => go('datasets')}>
+          <HelpCircle size={15} />
+          <span>接入指南与帮助</span>
+        </button>
       </SidebarFooter>
     </Sidebar>
   );
@@ -148,7 +183,7 @@ function loadStored<T>(key: string, fallback: T): T {
 
 export default function Home() {
   const [page, setPage] = useState<PageId>('overview');
-  const [dark, setDark] = useState(true);
+  const [dark, setDark] = useState(false);
   const [sources, setSources] = useState<DataSource[]>(initialSources);
   const [dashboards, setDashboards] =
     useState<DashboardConfig[]>(initialDashboards);
@@ -164,7 +199,7 @@ export default function Home() {
     };
     queueMicrotask(() => {
       sync();
-      setDark(localStorage.getItem('insight-admin-theme') !== 'light');
+      setDark(localStorage.getItem('insight-admin-theme-v2') === 'dark');
       setSources(loadStored('insight-sources', initialSources));
       setDashboards(loadStored('insight-dashboards', initialDashboards));
     });
@@ -194,7 +229,7 @@ export default function Home() {
     <TooltipProvider>
       <SidebarProvider>
         <PlatformSidebar page={page} go={go} />
-        <SidebarInset className="min-w-0">
+        <SidebarInset className="app-main-shell min-w-0">
           <header className="admin-header">
             <div className="header-left">
               <SidebarTrigger aria-label="展开或收起导航" />
@@ -217,7 +252,7 @@ export default function Home() {
                   const next = !dark;
                   setDark(next);
                   localStorage.setItem(
-                    'insight-admin-theme',
+                    'insight-admin-theme-v2',
                     next ? 'dark' : 'light',
                   );
                 }}
@@ -230,11 +265,22 @@ export default function Home() {
           <main className="workspace platform-workspace" id="content">
             <div className="page-head">
               <div>
-                <h1>{current.label}</h1>
+                <h1>
+                  {page === 'overview' ? '上午好，研发团队！👋' : current.label}
+                </h1>
                 <p className="subtitle">{pageDescriptions[page]}</p>
               </div>
               <div className="head-actions">
                 <span className="schema-version">Schema v1.0</span>
+                {page === 'overview' && (
+                  <Button
+                    className="btn primary-action"
+                    onClick={() => go('dashboards')}
+                  >
+                    <Plus size={15} />
+                    新建大屏
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   className="btn"
