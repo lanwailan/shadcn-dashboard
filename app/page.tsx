@@ -1,72 +1,99 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+
+import { useCallback, useEffect, useState } from 'react';
 import {
-  Boxes,
-  FlaskConical,
-  GitBranch,
+  Activity,
+  Blocks,
+  Braces,
+  Command,
+  Database,
+  Download,
   LayoutDashboard,
   Moon,
+  PlugZap,
   Sun,
-  Command,
-  Download,
-  CalendarDays,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sidebar,
-  SidebarProvider,
-  SidebarHeader,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
   SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Overview } from '@/components/dashboard/overview';
-import { ToolsView } from '@/components/dashboard/tools-view';
-import { CictView } from '@/components/dashboard/cict-view';
-import { PipelineView } from '@/components/dashboard/pipeline-view';
+import { ComponentsView } from '@/components/platform/components-view';
+import { DashboardsView } from '@/components/platform/dashboards-view';
+import { DatasetsView } from '@/components/platform/datasets-view';
+import { PlatformOverview } from '@/components/platform/platform-overview';
+import { RunsView } from '@/components/platform/runs-view';
+import { SourcesView } from '@/components/platform/sources-view';
 import { downloadText } from '@/components/dashboard/case-table';
-import {
-  initialCases,
-  toolsData,
-  registrants,
-  type CaseRecord,
-} from '@/lib/dashboard-data';
-import { useWebTools } from '@/hooks/use-web-tools';
-export const dimensions = [
-  {
-    id: 'tools',
-    label: '工具使用',
-    description: '注册、激活和调用情况',
-    icon: Boxes,
-  },
-  {
-    id: 'cict',
-    label: 'CICT 分析',
-    description: '测试结果与 Case 解析',
-    icon: FlaskConical,
-  },
-  {
-    id: 'pipeline',
-    label: '解析流水线',
-    description: '队列、Worker 和执行记录',
-    icon: GitBranch,
-  },
-];
+import { initialDashboards, initialSources } from '@/lib/platform-data';
+import type { DashboardConfig, DataSource } from '@/lib/platform-types';
+
 const navigation = [
-  { id: 'overview', label: '数据总览', icon: LayoutDashboard },
-  ...dimensions,
-];
-function AppSidebar({ page, go }: { page: string; go: (id: string) => void }) {
+  {
+    id: 'overview',
+    label: '平台总览',
+    icon: LayoutDashboard,
+    group: 'platform',
+  },
+  { id: 'sources', label: '数据源', icon: PlugZap, group: 'platform' },
+  { id: 'datasets', label: 'Datasets', icon: Database, group: 'platform' },
+  { id: 'runs', label: '运行记录', icon: Activity, group: 'platform' },
+  { id: 'dashboards', label: '大屏管理', icon: Braces, group: 'display' },
+  { id: 'components', label: '组件注册表', icon: Blocks, group: 'display' },
+] as const;
+type PageId = (typeof navigation)[number]['id'];
+
+function PlatformSidebar({
+  page,
+  go,
+}: {
+  page: PageId;
+  go: (id: PageId) => void;
+}) {
   const { setOpenMobile, state, isMobile } = useSidebar();
+  const renderGroup = (group: 'platform' | 'display') => (
+    <SidebarGroup>
+      <SidebarGroupLabel>
+        {group === 'platform' ? '数据平台' : '可视化'}
+      </SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {navigation
+            .filter((item) => item.group === group)
+            .map((item) => (
+              <SidebarMenuItem key={item.id}>
+                <SidebarMenuButton
+                  isActive={page === item.id}
+                  tooltip={item.label}
+                  aria-label={item.label}
+                  onClick={() => {
+                    go(item.id);
+                    setOpenMobile(false);
+                  }}
+                >
+                  <item.icon />
+                  <span>{item.label}</span>
+                  {item.id === 'runs' && <span className="nav-count">1</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
   return (
     <Sidebar
       collapsible="icon"
@@ -79,139 +106,119 @@ function AppSidebar({ page, go }: { page: string; go: (id: string) => void }) {
             <Command size={19} />
           </span>
           <div className="sidebar-brand-text">
-            <strong>Insight Admin</strong>
-            <p>研发数据平台</p>
+            <strong>Insight Studio</strong>
+            <p>数据接入与编排平台</p>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>工作空间</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={page === 'overview'}
-                  tooltip="数据总览"
-                  aria-label="数据总览"
-                  onClick={() => {
-                    go('overview');
-                    setOpenMobile(false);
-                  }}
-                >
-                  <LayoutDashboard />
-                  <span>数据总览</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>数据看板</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {dimensions.map((n) => (
-                <SidebarMenuItem key={n.id}>
-                  <SidebarMenuButton
-                    isActive={page === n.id}
-                    tooltip={n.label}
-                    aria-label={n.label}
-                    onClick={() => {
-                      go(n.id);
-                      setOpenMobile(false);
-                    }}
-                  >
-                    <n.icon />
-                    <span>{n.label}</span>
-                    {n.id === 'pipeline' && (
-                      <span className="nav-count">8</span>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {renderGroup('platform')}
+        {renderGroup('display')}
       </SidebarContent>
       <SidebarFooter>
         <div className="sidebar-user">
           <span className="avatar">RD</span>
           <div className="sidebar-brand-text">
-            <strong>研发团队</strong>
-            <p>演示工作空间</p>
+            <strong>研发效能平台</strong>
+            <p>管理员工作空间</p>
           </div>
         </div>
       </SidebarFooter>
     </Sidebar>
   );
 }
+
+const pageDescriptions: Record<PageId, string> = {
+  overview: '数据接入、标准化、查询与可视化的统一工作台',
+  sources: '管理连接器、调度规则和密钥引用',
+  datasets: '定义字段契约、查询协议、权限与数据血缘',
+  runs: '查看采集、转换和快照生成任务',
+  dashboards: '选择 Dataset、映射字段并发布配置化大屏',
+  components: '管理通用组件的输入契约和可用能力',
+};
+
+function loadStored<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    return JSON.parse(localStorage.getItem(key) ?? '') as T;
+  } catch {
+    return fallback;
+  }
+}
+
 export default function Home() {
-  const [page, setPage] = useState('overview');
+  const [page, setPage] = useState<PageId>('overview');
   const [dark, setDark] = useState(true);
-  const [cases, setCases] = useState<CaseRecord[]>(initialCases);
-  const locks = useRef(new Set<string>());
-  const go = useCallback((id: string) => {
-    if (!navigation.some((n) => n.id === id)) return;
+  const [sources, setSources] = useState<DataSource[]>(initialSources);
+  const [dashboards, setDashboards] =
+    useState<DashboardConfig[]>(initialDashboards);
+  const go = useCallback((id: PageId) => {
     setPage(id);
     location.hash = id;
     window.scrollTo({ top: 0 });
   }, []);
   useEffect(() => {
-    const stored = localStorage.getItem('insight-admin-theme');
-    queueMicrotask(() => setDark(stored !== 'light'));
     const sync = () => {
-      const h = location.hash.slice(1);
-      setPage(navigation.some((n) => n.id === h) ? h : 'overview');
+      const id = location.hash.slice(1) as PageId;
+      setPage(navigation.some((item) => item.id === id) ? id : 'overview');
     };
-    queueMicrotask(sync);
+    queueMicrotask(() => {
+      sync();
+      setDark(localStorage.getItem('insight-admin-theme') !== 'light');
+      setSources(loadStored('insight-sources', initialSources));
+      setDashboards(loadStored('insight-dashboards', initialDashboards));
+    });
     addEventListener('hashchange', sync);
     return () => removeEventListener('hashchange', sync);
   }, []);
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
   }, [dark]);
-  const retry = useCallback(async (id: string) => {
-    if (!initialCases.some((c) => c.id === id))
-      throw new Error('Case not found');
-    if (locks.current.has(id)) throw new Error('Case is already being parsed');
-    locks.current.add(id);
-    setCases((cs) =>
-      cs.map((c) => (c.id === id ? { ...c, status: 'running' } : c)),
-    );
-    await new Promise((r) => setTimeout(r, 1600));
-    setCases((cs) =>
-      cs.map((c) =>
-        c.id === id ? { ...c, status: 'success', duration: 42 } : c,
-      ),
-    );
-    locks.current.delete(id);
-  }, []);
-  useWebTools({ go, retry, cases });
+  const addSource = (source: DataSource) =>
+    setSources((current) => {
+      const next = [...current, source];
+      localStorage.setItem('insight-sources', JSON.stringify(next));
+      return next;
+    });
+  const saveDashboard = (dashboard: DashboardConfig) =>
+    setDashboards((current) => {
+      const exists = current.some((item) => item.id === dashboard.id);
+      const next = exists
+        ? current.map((item) => (item.id === dashboard.id ? dashboard : item))
+        : [...current, dashboard];
+      localStorage.setItem('insight-dashboards', JSON.stringify(next));
+      return next;
+    });
+  const current = navigation.find((item) => item.id === page)!;
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <AppSidebar page={page} go={go} />
+        <PlatformSidebar page={page} go={go} />
         <SidebarInset className="min-w-0">
           <header className="admin-header">
             <div className="header-left">
               <SidebarTrigger aria-label="展开或收起导航" />
               <span className="header-divider" />
-              <span className="header-current">
-                {navigation.find((n) => n.id === page)?.label}
+              <span className="header-current">{current.label}</span>
+              <span className="header-secondary">
+                Metadata-driven Data Platform
               </span>
-              <span className="header-secondary">内部工具与测试分析</span>
             </div>
             <div className="header-right">
-              <span className="demo-label">Demo</span>
+              <span className="environment-label">
+                <i />
+                Development
+              </span>
               <Button
                 variant="ghost"
                 size="icon"
                 aria-label={dark ? '切换浅色主题' : '切换深色主题'}
                 onClick={() => {
-                  setDark(!dark);
+                  const next = !dark;
+                  setDark(next);
                   localStorage.setItem(
                     'insight-admin-theme',
-                    !dark ? 'dark' : 'light',
+                    next ? 'dark' : 'light',
                   );
                 }}
               >
@@ -220,69 +227,47 @@ export default function Home() {
               <span className="avatar">RD</span>
             </div>
           </header>
-          <main className="workspace" id="content">
+          <main className="workspace platform-workspace" id="content">
             <div className="page-head">
               <div>
-                <h1>{navigation.find((n) => n.id === page)?.label}</h1>
-                {page !== 'overview' && (
-                  <p className="subtitle">
-                    {dimensions.find((d) => d.id === page)?.description} · 2026
-                    年 9 月 8 日
-                  </p>
-                )}
+                <h1>{current.label}</h1>
+                <p className="subtitle">{pageDescriptions[page]}</p>
               </div>
               <div className="head-actions">
-                <span className="date-label">
-                  <CalendarDays size={15} />
-                  2026-09-08
-                </span>
+                <span className="schema-version">Schema v1.0</span>
                 <Button
+                  variant="outline"
                   className="btn"
                   onClick={() =>
                     downloadText(
-                      `insight-${page}-2026-09-08.json`,
-                      JSON.stringify(
-                        {
-                          environment: 'demo',
-                          date: '2026-09-08',
-                          view: page,
-                          ...(page === 'tools'
-                            ? { tools: toolsData, registrants }
-                            : page === 'overview'
-                              ? {
-                                  registered_users: 1284,
-                                  calls_today: 3960,
-                                  cases_today: 386,
-                                  completion_rate: 98.2,
-                                }
-                              : { cases }),
-                        },
-                        null,
-                        2,
-                      ),
+                      `insight-platform-${page}.json`,
+                      JSON.stringify({ sources, dashboards }, null, 2),
                     )
                   }
                 >
-                  <Download size={15} />
-                  导出报告
+                  <Download size={14} />
+                  导出配置
                 </Button>
               </div>
             </div>
-            {page === 'overview' ? (
-              <Overview go={go} cases={cases} />
-            ) : page === 'tools' ? (
-              <ToolsView />
-            ) : page === 'cict' ? (
-              <CictView cases={cases} retry={retry} />
-            ) : (
-              <PipelineView cases={cases} retry={retry} />
-            )}
+            {page === 'overview' && (
+              <PlatformOverview go={(id) => go(id as PageId)} />
+            )}{' '}
+            {page === 'sources' && (
+              <SourcesView sources={sources} onAdd={addSource} />
+            )}{' '}
+            {page === 'datasets' && <DatasetsView />}{' '}
+            {page === 'runs' && <RunsView />}{' '}
+            {page === 'dashboards' && (
+              <DashboardsView dashboards={dashboards} onSave={saveDashboard} />
+            )}{' '}
+            {page === 'components' && <ComponentsView />}
             <footer className="footer">
               <span>
-                Insight Admin <span className="footer-dot">·</span>{' '}
-                演示数据，未连接后端
+                Insight Studio <span className="footer-dot">·</span>{' '}
+                元数据驱动原型
               </span>
-              <span>数据快照 2026-09-08 14:32 · UTC+8</span>
+              <span>配置存储：浏览器 LocalStorage · 无真实凭据</span>
             </footer>
           </main>
         </SidebarInset>

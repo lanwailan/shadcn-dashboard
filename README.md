@@ -1,43 +1,40 @@
-# Insight Admin
+# Insight Studio
 
-纯前端研发数据后台，使用 React 19、TypeScript、shadcn/ui（Base UI）、Recharts。布局参考 Shadcn Admin。默认深色，可切换浅色。
+一个基于 React、TypeScript 和 shadcn/ui 的元数据驱动数据接入与可视化编排平台原型。
 
-## 运行
+平台将数据接入、Dataset 契约、组件能力和页面布局拆成独立配置。新增常规数据源时，可以复用连接器、输出标准 Dataset，再通过 Dashboard JSON 选择组件与字段映射，无需修改 React 主页面。
 
-```sh
+## 已实现
+
+- HTTP API、数据库、Jira、飞书、GitLab、文件、Webhook、Agent 和脚本连接器入口
+- Dataset Schema、字段角色、查询参数、权限、缓存、数据预览和血缘
+- Metric、Table、Line、Bar、Pie、Progress、Status List、Markdown 组件注册表
+- 根据 Dataset Schema 自动过滤兼容组件
+- 24 列 Dashboard 编排、字段映射、拖拽排序、JSON 校验和预览
+- 数据源与 Dashboard 配置的 LocalStorage 持久化
+- 深色、浅色主题与响应式侧边栏
+
+## 本地运行
+
+```bash
 npm install
 npm run dev
+```
+
+打开 `http://localhost:3000`。
+
+## 验证
+
+```bash
+npx tsc --noEmit --incremental false
+npm run lint
 npm run build
 ```
 
-`dist/client` 是可部署的静态目录。Hash 导航支持直接进入 `/#tools`、`/#cict`、`/#pipeline`，无需服务器路由改写。没有应用后端、数据库或认证逻辑。
+## 示例与架构
 
-## 功能
+- [架构说明](docs/metadata-platform-architecture.md)
+- [Jira 数据源配置](examples/data-source.jira.json)
+- [JavaScript 标准化转换](examples/transform.normalize-test-cases.js)
 
-- 总览：指标、7 日趋势、最近解析、三个数据维度入口。
-- 工具：注册、版本、激活、Token、调用分布、小时分布、会话深度、注册用户明细。
-- CICT：每日汇总、类型/用户/平台分布、搜索与状态筛选、任务展开、BFT/CAN/IMMO 明细、日志和 JSON 报告、下载。
-- 流水线：Go → ACP → Agent CLI → 结果归档、Worker、队列、耗时分布。
-- 重新解析为 1.6 秒前端模拟，仅更新最近任务，不修改全天统计快照。测试失败与解析失败独立。
-
-## 接入与扩展
-
-`lib/dashboard-data.ts` 定义 CaseRecord、TestResult、状态、演示数据与日志生成。接入 Go 时将此数据适配层换成 HTTP API，组件无需了解 ACP 细节。
-
-建议接口：
-
-- `GET /api/metrics/tools?from=&to=`：聚合指标、时间序列与分布。
-- `GET /api/cict/cases?query=&status=&cursor=`：分页任务。
-- `GET /api/cict/cases/:id`：基础信息、测试细则、日志与结果文件。
-- `POST /api/cict/cases/:id/reparse`：返回排队任务 ID；后端执行幂等保护。
-- `GET /api/pipeline`：队列与 Worker 快照。通过 SSE 或轮询更新任务。
-
-`components/dashboard/shared.tsx` 是 Stat / Panel / Pill / Distribution / TrendChart 等公共组件。`case-table.tsx` 在 CICT 和流水线间复用。`app/globals.css` 维护主题和布局。新增维度：增加 View 组件，在 app/page.tsx 的 dimensions 中注册导航并添加渲染，再在总览增加指标入口。
-
-所有姓名、路径与数据为演示内容，Jenkins 路径是文本示例。重新解析不调用服务器。主题偏好保存在当前浏览器中。
-
-## 检查
-
-`npx tsc --noEmit` 和 `npm run build` 验证类型与静态导出。未进行浏览器交互 QA。可选 WebMCP 在支持 document.modelContext 的浏览器中暴露读取和模拟重解析功能；普通浏览器自动忽略。
-
-检查说明：生成模板自带的部分 components/ui 与 use-mobile.ts 存在 lint 规则冲突，未修改第三方组件。本次业务代码单独运行 oxlint。WebMCP 未在支持的浏览器上下文中验证。
+当前版本是纯前端可交互原型，配置保存在浏览器中，所有业务数据均为演示数据。生产接入边界、统一 API 和 Go 服务拆分见架构说明。

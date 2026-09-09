@@ -1,0 +1,12 @@
+{
+  "id": "jira_test_cases",
+  "connector": "jira",
+  "config": {
+    "baseUrl": "https://jira.example.com",
+    "jql": "project = CICT AND type = Test",
+    "authRef": "jira-prod-token"
+  },
+  "schedule": "*/10 * * * *",
+  "transform": "normalize_test_cases_v1",
+  "outputDataset": "test_case_status"
+}

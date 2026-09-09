@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
 export const metadata: Metadata = {
-  title: 'Insight · 研发效能中心',
-  description: '统一查看内部工具使用、CICT 测试分析与解析流水线。',
+  title: 'Insight Studio · 数据接入与编排平台',
+  description:
+    '以 Dataset 契约、组件注册表和 Dashboard Schema 驱动的数据可视化平台。',
 };
 export default function RootLayout({
   children,
