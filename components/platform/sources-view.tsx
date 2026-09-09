@@ -4,41 +4,16 @@ import { useMemo, useState } from 'react';
 import {
   CheckCircle2,
   CirclePause,
-  KeyRound,
   Plus,
   RefreshCw,
   Search,
   TriangleAlert,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { connectorLabels } from '@/lib/platform-data';
-import type { ConnectorType, DataSource } from '@/lib/platform-types';
-
-const emptyForm = {
-  name: '',
-  connector: 'http' as ConnectorType,
-  endpoint: '',
-  schedule: '*/10 * * * *',
-  outputDataset: '',
-  authRef: '',
-  owner: '数据平台组',
-};
+import type { DataSource } from '@/lib/platform-types';
+import { SourceWizard } from './source-wizard';
 
 export function SourcesView({
   sources,
@@ -49,7 +24,6 @@ export function SourcesView({
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [form, setForm] = useState(emptyForm);
   const [notice, setNotice] = useState('');
   const filtered = useMemo(
     () =>
@@ -60,27 +34,6 @@ export function SourcesView({
       ),
     [sources, query],
   );
-  const submit = () => {
-    if (
-      !form.name.trim() ||
-      !form.endpoint.trim() ||
-      !form.outputDataset.trim()
-    ) {
-      setNotice('请填写名称、连接地址和输出 Dataset。');
-      return;
-    }
-    onAdd({
-      ...form,
-      id: `${form.connector}_${Date.now()}`,
-      status: 'healthy',
-      lastRun: '尚未运行',
-      successRate: 100,
-      authRef: form.authRef || undefined,
-    });
-    setForm(emptyForm);
-    setNotice('');
-    setOpen(false);
-  };
   return (
     <>
       <div className="view-toolbar">
@@ -161,112 +114,14 @@ export function SourcesView({
           {notice}
         </output>
       )}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="source-dialog">
-          <DialogHeader>
-            <DialogTitle>新增数据源</DialogTitle>
-            <DialogDescription>
-              选择通用连接器。凭据只保存引用，不在配置中写入 Token。
-            </DialogDescription>
-          </DialogHeader>
-          <div className="form-grid">
-            <label htmlFor="source-name">
-              <span>名称</span>
-              <Input
-                id="source-name"
-                value={form.name}
-                onChange={(event) =>
-                  setForm({ ...form, name: event.target.value })
-                }
-                placeholder="例如：Jira Test Issues"
-              />
-            </label>
-            <label htmlFor="source-connector">
-              <span>连接器</span>
-              <Select
-                value={form.connector}
-                onValueChange={(value) =>
-                  setForm({ ...form, connector: value as ConnectorType })
-                }
-              >
-                <SelectTrigger id="source-connector">
-                  <SelectValue>{connectorLabels[form.connector]}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(connectorLabels).map(([value, label]) => (
-                    <SelectItem value={value} key={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
-            <label className="span-2" htmlFor="source-endpoint">
-              <span>连接地址 / 文件位置</span>
-              <Input
-                id="source-endpoint"
-                value={form.endpoint}
-                onChange={(event) =>
-                  setForm({ ...form, endpoint: event.target.value })
-                }
-                placeholder="https://api.internal/v1/data"
-              />
-            </label>
-            <label htmlFor="source-schedule">
-              <span>调度规则</span>
-              <Input
-                id="source-schedule"
-                value={form.schedule}
-                onChange={(event) =>
-                  setForm({ ...form, schedule: event.target.value })
-                }
-              />
-            </label>
-            <label htmlFor="source-dataset">
-              <span>输出 Dataset</span>
-              <Input
-                id="source-dataset"
-                value={form.outputDataset}
-                onChange={(event) =>
-                  setForm({ ...form, outputDataset: event.target.value })
-                }
-                placeholder="dataset_id"
-              />
-            </label>
-            <label htmlFor="source-auth-ref">
-              <span>密钥引用</span>
-              <div className="input-with-icon">
-                <KeyRound size={14} />
-                <Input
-                  id="source-auth-ref"
-                  value={form.authRef}
-                  onChange={(event) =>
-                    setForm({ ...form, authRef: event.target.value })
-                  }
-                  placeholder="authRef，可选"
-                />
-              </div>
-            </label>
-            <label htmlFor="source-owner">
-              <span>负责人</span>
-              <Input
-                id="source-owner"
-                value={form.owner}
-                onChange={(event) =>
-                  setForm({ ...form, owner: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          {notice && <p className="form-error">{notice}</p>}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              取消
-            </Button>
-            <Button onClick={submit}>保存数据源</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SourceWizard
+        open={open}
+        onOpenChange={setOpen}
+        onPublished={(source) => {
+          onAdd(source);
+          setNotice(`${source.name} 已发布，首轮同步等待调度。`);
+        }}
+      />
     </>
   );
 }

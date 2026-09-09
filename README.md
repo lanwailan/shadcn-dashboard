@@ -7,6 +7,7 @@
 ## 已实现
 
 - HTTP API、数据库、Jira、飞书、GitLab、文件、Webhook、Agent 和脚本连接器入口
+- 元数据驱动的六步接入向导：连接测试、样本预览、Schema 推断、同步策略与发布
 - Dataset Schema、字段角色、查询参数、权限、缓存、数据预览和血缘
 - Metric、Table、Line、Bar、Pie、Progress、Status List、Markdown 组件注册表
 - 根据 Dataset Schema 自动过滤兼容组件

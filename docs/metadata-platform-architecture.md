@@ -15,13 +15,23 @@ flowchart LR
 
 ## 当前前端原型
 
-- 数据源：新增通用连接器配置，只保存 `authRef`；配置保存在浏览器 LocalStorage。
+- 数据源：六步接入向导根据 Connector Definition 动态生成表单，覆盖连接测试、样本预览、Schema 推断、字段角色、同步策略和发布；配置保存在浏览器 LocalStorage。
 - Dataset：字段类型、角色、说明、版本、负责人、权限、刷新、缓存、数据预览、血缘和查询协议。
 - 组件注册表：组件声明字段角色契约，编排器根据 Dataset Schema 过滤可用组件。
 - 大屏：24 列布局、组件选择、字段映射、拖拽排序、JSON 编辑、校验、预览与发布状态。
 - 动态渲染：`WidgetRenderer` 根据 `component` 渲染注册组件，数据来自 Dataset。
 
 浏览器存储只是演示实现。生产环境应将数据源、Dataset、Dashboard 和运行记录改为 Go 统一 API。
+
+前端通过 `PlatformAdapter` 访问平台能力。当前使用 `MockPlatformAdapter` 演示完整流程，接入 Go 后替换为 HTTP Adapter，页面组件和向导状态无需改动。连接器表单来自 `connector-definitions.ts`，因此新增常规连接器不需要新增 React 表单。
+
+```ts
+interface PlatformAdapter {
+  testConnection(draft: SourceDraft): Promise<ConnectionTestResult>;
+  previewSource(draft: SourceDraft): Promise<PreviewResult>;
+  publishSource(draft: SourceDraft): Promise<DataSource>;
+}
+```
 
 ## Go 服务边界
 

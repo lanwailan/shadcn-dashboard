@@ -48,6 +48,59 @@ export type DataSource = {
   status: 'healthy' | 'warning' | 'disabled';
   lastRun: string;
   successRate: number;
+  config?: Record<string, string>;
+  syncMode?: 'full' | 'incremental' | 'realtime';
+  cursorField?: string;
+  schema?: DatasetField[];
+};
+
+export type ConnectorFieldDefinition = {
+  key: string;
+  label: string;
+  type: 'text' | 'url' | 'number' | 'select' | 'credential';
+  placeholder?: string;
+  required?: boolean;
+  options?: { label: string; value: string }[];
+  help?: string;
+};
+
+export type ConnectorDefinition = {
+  type: ConnectorType;
+  name: string;
+  category: 'api' | 'database' | 'saas' | 'event' | 'file' | 'compute';
+  description: string;
+  fields: ConnectorFieldDefinition[];
+  capabilities: {
+    preview: boolean;
+    schemaDiscovery: boolean;
+    incrementalSync: boolean;
+    realtime: boolean;
+  };
+};
+
+export type SourceDraft = {
+  name: string;
+  connector: ConnectorType;
+  owner: string;
+  config: Record<string, string>;
+  outputDataset: string;
+  schedule: string;
+  syncMode: 'full' | 'incremental' | 'realtime';
+  cursorField: string;
+  fields: DatasetField[];
+};
+
+export type ConnectionTestResult = {
+  ok: boolean;
+  latency: number;
+  message: string;
+  checkedAt: string;
+};
+
+export type PreviewResult = {
+  fields: DatasetField[];
+  rows: Record<string, string | number | boolean>[];
+  totalEstimate: number;
 };
 
 export type ComponentType =
