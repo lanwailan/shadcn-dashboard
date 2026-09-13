@@ -2649,6 +2649,297 @@ h3 {
   }
 }
 
+/* Final precedence for the installed Efferd dashboard-3 theme. */
+:root {
+  --background: #fafafa;
+  --sidebar: #f4f4f5;
+  --card: #ffffff;
+  --foreground: #18181b;
+  --primary: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --border: #e4e4e7;
+  --shadow: none;
+}
+.dark {
+  --background: #09090b;
+  --sidebar: #09090b;
+  --card: #18181b;
+  --foreground: #fafafa;
+  --primary: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --border: #27272a;
+  --shadow: none;
+}
+[data-slot='sidebar-wrapper'] {
+  padding: 0;
+  background: var(--sidebar);
+}
+.app-sidebar [data-slot='sidebar-container'] {
+  padding: 8px 4px 8px 8px;
+}
+.app-sidebar [data-slot='sidebar-inner'] {
+  border-color: var(--border);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.app-main-shell {
+  margin: 8px 8px 8px 0 !important;
+  border-color: var(--border);
+  border-radius: 12px !important;
+  box-shadow: none;
+}
+.admin-header {
+  height: 56px;
+  padding-inline: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.workspace {
+  padding: 24px;
+}
+.page-head h1 {
+  font-size: 24px;
+}
+.btn,
+.primary-action {
+  border-radius: 6px !important;
+  box-shadow: none;
+}
+.primary-action,
+.sidebar-promo button {
+  color: var(--background);
+  background: var(--primary);
+}
+.brand-icon {
+  border-radius: 7px;
+  color: var(--background);
+  background: var(--foreground);
+  box-shadow: none;
+}
+.app-sidebar [data-slot='sidebar-menu-button'][data-active='true'] {
+  color: var(--foreground);
+  background: var(--muted);
+}
+.sidebar-promo {
+  border-color: var(--border);
+  border-radius: 8px;
+  background: var(--background);
+}
+.sidebar-promo > span {
+  color: var(--foreground);
+  background: var(--muted);
+}
+.panel,
+.source-card,
+.dataset-detail,
+.asset-list,
+.component-card,
+.dashboard-card,
+.run-table,
+.run-console,
+.widget-builder,
+.json-editor,
+.json-help {
+  border-radius: 10px;
+  box-shadow: none;
+}
+.efferd-dashboard-grid [data-slot='card'] {
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--border);
+}
+@media (max-width: 900px) {
+  .app-main-shell {
+    margin: 0 !important;
+    border: 0;
+    border-radius: 0 !important;
+  }
+}
+
+/* Efferd dashboard-3 visual layer: neutral inset shell and dense ring cards. */
+:root {
+  --background: #fafafa;
+  --sidebar: #f4f4f5;
+  --card: #ffffff;
+  --foreground: #18181b;
+  --primary: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --border: #e4e4e7;
+  --blue: #6366f1;
+  --teal: #10b981;
+  --purple: #8b5cf6;
+  --shadow: none;
+}
+.dark {
+  --background: #09090b;
+  --sidebar: #09090b;
+  --card: #18181b;
+  --foreground: #fafafa;
+  --primary: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --border: #27272a;
+  --shadow: none;
+}
+[data-slot='sidebar-wrapper'] {
+  padding: 0;
+  background: var(--sidebar);
+}
+.app-sidebar [data-slot='sidebar-container'] {
+  padding: 8px 4px 8px 8px;
+}
+.app-sidebar [data-slot='sidebar-inner'] {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.app-main-shell {
+  margin: 8px 8px 8px 0 !important;
+  border: 1px solid var(--border);
+  border-radius: 12px !important;
+  box-shadow: none;
+}
+.admin-header {
+  height: 56px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+}
+.workspace {
+  padding: 24px;
+}
+.page-head {
+  min-height: 44px;
+  margin-bottom: 20px;
+}
+.page-head h1 {
+  font-size: 24px;
+  font-weight: 650;
+}
+.page-head .subtitle {
+  color: var(--muted-foreground);
+}
+.environment-label,
+.schema-version {
+  border-radius: 6px;
+  background: transparent;
+}
+.btn,
+.primary-action {
+  border-radius: 6px !important;
+  box-shadow: none;
+}
+.primary-action {
+  background: var(--primary);
+}
+.panel {
+  border-radius: 10px;
+  box-shadow: none;
+}
+.brand-icon {
+  border-radius: 7px;
+  background: var(--foreground);
+  box-shadow: none;
+}
+.sidebar-brand {
+  padding: 11px 10px 13px;
+}
+.sidebar-search {
+  margin: 0 10px 8px;
+}
+.sidebar-search input {
+  height: 34px;
+  border-radius: 7px;
+  background: transparent;
+}
+.sidebar-search svg {
+  top: 9px;
+}
+.sidebar-search kbd {
+  top: 8px;
+}
+.app-sidebar [data-slot='sidebar-group'] {
+  padding-inline: 10px;
+}
+.app-sidebar [data-slot='sidebar-group-label'] {
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.app-sidebar [data-slot='sidebar-menu-button'] {
+  height: 34px;
+  border-radius: 6px;
+  color: var(--muted-foreground);
+}
+.app-sidebar [data-slot='sidebar-menu-button'][data-active='true'] {
+  color: var(--foreground);
+  background: var(--muted);
+  font-weight: 500;
+}
+.nav-count {
+  color: var(--primary-foreground, #fff);
+  background: var(--primary);
+}
+.sidebar-promo {
+  border-color: var(--border);
+  border-radius: 8px;
+  background: var(--background);
+}
+.sidebar-promo > span {
+  border-radius: 6px;
+  color: var(--foreground);
+  background: var(--muted);
+}
+.sidebar-promo button {
+  border-radius: 6px;
+  background: var(--primary);
+  box-shadow: none;
+}
+.sidebar-user {
+  border-radius: 8px;
+}
+.efferd-dashboard-grid [data-slot='card'] {
+  border-radius: 10px;
+  box-shadow: none;
+  ring-color: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+.efferd-dashboard-grid [data-slot='card-title'] {
+  font-size: 14px;
+  font-weight: 600;
+}
+.efferd-dashboard-grid [data-slot='card-description'] {
+  font-size: 11px;
+  line-height: 1.5;
+}
+.efferd-dashboard-grid [data-slot='chart-container'] {
+  font-size: 11px;
+}
+.efferd-dashboard-grid .recharts-cartesian-grid line {
+  stroke: var(--border);
+}
+.efferd-dashboard-grid .recharts-text {
+  fill: var(--muted-foreground);
+  font-size: 10px;
+}
+.source-card,
+.dataset-detail,
+.asset-list,
+.component-card,
+.dashboard-card,
+.run-table,
+.run-console,
+.widget-builder,
+.json-editor,
+.json-help {
+  border-radius: 10px;
+}
+@media (max-width: 900px) {
+  .app-main-shell {
+    margin: 0 !important;
+    border: 0;
+    border-radius: 0 !important;
+  }
+}
+
 /* Metadata-driven source onboarding wizard. */
 .source-wizard {
   display: grid !important;
@@ -3604,5 +3895,112 @@ body {
   .page-head .head-actions {
     flex-wrap: wrap;
     justify-content: flex-end;
+  }
+}
+
+/* Efferd dashboard-3 must remain the last theme layer. */
+:root {
+  --background: #fafafa;
+  --sidebar: #f4f4f5;
+  --card: #ffffff;
+  --foreground: #18181b;
+  --primary: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --border: #e4e4e7;
+  --shadow: none;
+}
+.dark {
+  --background: #09090b;
+  --sidebar: #09090b;
+  --card: #18181b;
+  --foreground: #fafafa;
+  --primary: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --border: #27272a;
+  --shadow: none;
+}
+[data-slot='sidebar-wrapper'] {
+  padding: 0;
+  background: var(--sidebar);
+}
+.app-sidebar [data-slot='sidebar-container'] {
+  padding: 8px 4px 8px 8px;
+}
+.app-sidebar [data-slot='sidebar-inner'] {
+  border-color: var(--border);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.app-main-shell {
+  margin: 8px 8px 8px 0 !important;
+  border-color: var(--border);
+  border-radius: 12px !important;
+  box-shadow: none;
+}
+.admin-header {
+  height: 56px;
+  padding-inline: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.workspace {
+  padding: 24px;
+}
+.page-head h1 {
+  font-size: 24px;
+}
+.btn,
+.primary-action {
+  border-radius: 6px !important;
+  box-shadow: none;
+}
+.primary-action,
+.sidebar-promo button {
+  color: var(--background);
+  background: var(--primary);
+}
+.brand-icon {
+  border-radius: 7px;
+  color: var(--background);
+  background: var(--foreground);
+  box-shadow: none;
+}
+.app-sidebar [data-slot='sidebar-menu-button'][data-active='true'] {
+  color: var(--foreground);
+  background: var(--muted);
+}
+.sidebar-promo {
+  border-color: var(--border);
+  border-radius: 8px;
+  background: var(--background);
+}
+.sidebar-promo > span {
+  color: var(--foreground);
+  background: var(--muted);
+}
+.panel,
+.source-card,
+.dataset-detail,
+.asset-list,
+.component-card,
+.dashboard-card,
+.run-table,
+.run-console,
+.widget-builder,
+.json-editor,
+.json-help {
+  border-radius: 10px;
+  box-shadow: none;
+}
+.efferd-dashboard-grid [data-slot='card'] {
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--border);
+}
+@media (max-width: 900px) {
+  .app-main-shell {
+    margin: 0 !important;
+    border: 0;
+    border-radius: 0 !important;
   }
 }
