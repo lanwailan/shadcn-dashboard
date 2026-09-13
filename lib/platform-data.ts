@@ -6,7 +6,375 @@ import type {
   JobRun,
 } from './platform-types';
 
+const cicdProjects = ['Vortex Core', 'Vehicle OS', 'Cockpit'];
+const cicdEnvironments = ['生产', '预发', '开发'];
+const cicdDates = [
+  ...Array.from({ length: 17 }, (_, index) => `08.${index + 15}`),
+  ...Array.from(
+    { length: 13 },
+    (_, index) => `09.${String(index + 1).padStart(2, '0')}`,
+  ),
+];
+
+const cicdDailyRows = cicdDates.flatMap((date, dateIndex) =>
+  cicdProjects.flatMap((project, projectIndex) =>
+    cicdEnvironments.map((environment, environmentIndex) => {
+      const pipelines =
+        17 +
+        ((dateIndex * 5 + projectIndex * 3 + environmentIndex * 2) % 15) +
+        projectIndex * 3;
+      const failed = Math.max(
+        1,
+        Math.round(
+          pipelines *
+            (0.035 +
+              ((dateIndex + projectIndex + environmentIndex) % 4) * 0.009),
+        ),
+      );
+      return {
+        date,
+        project,
+        environment,
+        pipelines,
+        succeeded: pipelines - failed,
+        failed,
+        recovered: Math.max(0, failed - ((dateIndex + projectIndex) % 2)),
+        avgDuration:
+          328 +
+          projectIndex * 34 +
+          environmentIndex * 18 +
+          (dateIndex % 6) * 11,
+      };
+    }),
+  ),
+);
+
+const cicdTriggerRows = cicdDates.flatMap((date, dateIndex) =>
+  cicdProjects.flatMap((project, projectIndex) =>
+    cicdEnvironments.flatMap((environment, environmentIndex) =>
+      [
+        {
+          trigger: '代码推送',
+          runs: 8 + ((dateIndex + projectIndex * 2 + environmentIndex) % 7),
+        },
+        {
+          trigger: '合并请求',
+          runs: 5 + ((dateIndex * 2 + projectIndex + environmentIndex) % 6),
+        },
+        {
+          trigger: '定时任务',
+          runs: 3 + ((dateIndex + projectIndex + environmentIndex * 2) % 4),
+        },
+        {
+          trigger: '手动执行',
+          runs: 2 + ((dateIndex + projectIndex * 3 + environmentIndex) % 3),
+        },
+      ].map((item) => ({ date, project, environment, ...item })),
+    ),
+  ),
+);
+
 export const datasets: Dataset[] = [
+  {
+    id: 'cicd_delivery_daily',
+    name: 'CI/CD 交付日报',
+    description: '按项目、环境和日期聚合的流水线执行与恢复数据。',
+    version: 'v1',
+    owner: '平台基础组',
+    source: 'gitlab_commits',
+    updatedAt: '今天 16:42',
+    refresh: '每 1 分钟',
+    cacheTtl: '30 秒',
+    permission: '研发组织',
+    fields: [
+      {
+        key: 'date',
+        label: '日期',
+        type: 'datetime',
+        role: 'time',
+        description: '统计日期，MM.DD',
+      },
+      {
+        key: 'project',
+        label: '项目',
+        type: 'string',
+        role: 'dimension',
+        description: '流水线所属项目',
+      },
+      {
+        key: 'environment',
+        label: '环境',
+        type: 'string',
+        role: 'dimension',
+        description: '目标部署环境',
+      },
+      {
+        key: 'pipelines',
+        label: '流水线数',
+        type: 'number',
+        role: 'metric',
+        description: '流水线执行总数',
+      },
+      {
+        key: 'succeeded',
+        label: '成功数',
+        type: 'number',
+        role: 'metric',
+        description: '成功结束的流水线数',
+      },
+      {
+        key: 'failed',
+        label: '失败数',
+        type: 'number',
+        role: 'metric',
+        description: '失败结束的流水线数',
+      },
+      {
+        key: 'recovered',
+        label: '已恢复',
+        type: 'number',
+        role: 'metric',
+        description: '重试或修复后恢复的流水线数',
+      },
+      {
+        key: 'avgDuration',
+        label: '平均耗时',
+        type: 'number',
+        role: 'metric',
+        description: '平均执行耗时，单位秒',
+      },
+    ],
+    rows: cicdDailyRows,
+    lineage: [
+      'GitLab Webhook',
+      'Pipeline Collector',
+      'SQL Aggregate',
+      'cicd_delivery_daily',
+    ],
+  },
+  {
+    id: 'cicd_trigger_distribution',
+    name: 'CI/CD 触发方式分布',
+    description: '按项目和环境聚合的流水线触发来源。',
+    version: 'v1',
+    owner: '平台基础组',
+    source: 'gitlab_commits',
+    updatedAt: '今天 16:42',
+    refresh: '每 5 分钟',
+    cacheTtl: '1 分钟',
+    permission: '研发组织',
+    fields: [
+      {
+        key: 'date',
+        label: '日期',
+        type: 'datetime',
+        role: 'time',
+        description: '统计日期，MM.DD',
+      },
+      {
+        key: 'project',
+        label: '项目',
+        type: 'string',
+        role: 'dimension',
+        description: '流水线所属项目',
+      },
+      {
+        key: 'environment',
+        label: '环境',
+        type: 'string',
+        role: 'dimension',
+        description: '目标部署环境',
+      },
+      {
+        key: 'trigger',
+        label: '触发方式',
+        type: 'string',
+        role: 'dimension',
+        description: '流水线启动来源',
+      },
+      {
+        key: 'runs',
+        label: '执行次数',
+        type: 'number',
+        role: 'metric',
+        description: '触发方式对应的执行次数',
+      },
+    ],
+    rows: cicdTriggerRows,
+    lineage: [
+      'GitLab Webhook',
+      'Trigger Classifier',
+      'cicd_trigger_distribution',
+    ],
+  },
+  {
+    id: 'cicd_recent_runs',
+    name: 'CI/CD 最近运行',
+    description: '最近的流水线运行状态、分支和触发信息。',
+    version: 'v1',
+    owner: '平台基础组',
+    source: 'gitlab_commits',
+    updatedAt: '今天 16:42',
+    refresh: '每 30 秒',
+    cacheTtl: '15 秒',
+    permission: '研发组织',
+    fields: [
+      {
+        key: 'pipelineId',
+        label: '流水线',
+        type: 'string',
+        role: 'dimension',
+        description: '流水线运行 ID',
+      },
+      {
+        key: 'project',
+        label: '项目',
+        type: 'string',
+        role: 'dimension',
+        description: '流水线所属项目',
+      },
+      {
+        key: 'branch',
+        label: '分支',
+        type: 'string',
+        role: 'dimension',
+        description: '触发分支',
+      },
+      {
+        key: 'environment',
+        label: '环境',
+        type: 'string',
+        role: 'dimension',
+        description: '目标部署环境',
+      },
+      {
+        key: 'trigger',
+        label: '触发方式',
+        type: 'string',
+        role: 'dimension',
+        description: '流水线启动来源',
+      },
+      {
+        key: 'actor',
+        label: '触发人',
+        type: 'string',
+        role: 'dimension',
+        description: '流水线触发用户',
+      },
+      {
+        key: 'status',
+        label: '状态',
+        type: 'string',
+        role: 'dimension',
+        description: '当前运行状态',
+      },
+      {
+        key: 'duration',
+        label: '耗时',
+        type: 'number',
+        role: 'metric',
+        description: '流水线运行耗时，单位秒',
+      },
+      {
+        key: 'startedAt',
+        label: '开始时间',
+        type: 'datetime',
+        role: 'time',
+        description: '流水线开始时间',
+      },
+    ],
+    rows: [
+      {
+        pipelineId: '#18427',
+        project: 'Vortex Core',
+        branch: 'release/3.8',
+        environment: '生产',
+        trigger: '合并请求',
+        actor: '陈思远',
+        status: '成功',
+        duration: 376,
+        startedAt: '16:38',
+      },
+      {
+        pipelineId: '#18426',
+        project: 'Vehicle OS',
+        branch: 'main',
+        environment: '预发',
+        trigger: '代码推送',
+        actor: '王子涵',
+        status: '运行中',
+        duration: 248,
+        startedAt: '16:34',
+      },
+      {
+        pipelineId: '#18425',
+        project: 'Cockpit',
+        branch: 'feature/audio',
+        environment: '开发',
+        trigger: '代码推送',
+        actor: '李明',
+        status: '失败',
+        duration: 192,
+        startedAt: '16:29',
+      },
+      {
+        pipelineId: '#18424',
+        project: 'Vortex Core',
+        branch: 'main',
+        environment: '预发',
+        trigger: '定时任务',
+        actor: '系统',
+        status: '成功',
+        duration: 421,
+        startedAt: '16:22',
+      },
+      {
+        pipelineId: '#18423',
+        project: 'Vehicle OS',
+        branch: 'hotfix/can',
+        environment: '生产',
+        trigger: '手动执行',
+        actor: '张晨',
+        status: '成功',
+        duration: 354,
+        startedAt: '16:16',
+      },
+      {
+        pipelineId: '#18422',
+        project: 'Cockpit',
+        branch: 'main',
+        environment: '生产',
+        trigger: '合并请求',
+        actor: '赵雨桐',
+        status: '成功',
+        duration: 405,
+        startedAt: '16:09',
+      },
+      {
+        pipelineId: '#18421',
+        project: 'Vortex Core',
+        branch: 'feature/cache',
+        environment: '开发',
+        trigger: '代码推送',
+        actor: '陈思远',
+        status: '已取消',
+        duration: 86,
+        startedAt: '15:58',
+      },
+      {
+        pipelineId: '#18420',
+        project: 'Vehicle OS',
+        branch: 'main',
+        environment: '开发',
+        trigger: '定时任务',
+        actor: '系统',
+        status: '成功',
+        duration: 338,
+        startedAt: '15:47',
+      },
+    ],
+    lineage: ['GitLab Pipeline API', 'HTTP Connector', 'cicd_recent_runs'],
+  },
   {
     id: 'tool_usage_daily',
     name: '工具使用日报',

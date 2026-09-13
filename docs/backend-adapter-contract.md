@@ -11,12 +11,13 @@ interface PlatformAdapter {
   testConnection(draft: SourceDraft): Promise<ConnectionTestResult>;
   previewSource(draft: SourceDraft): Promise<PreviewResult>;
   publishSource(draft: SourceDraft): Promise<DataSource>;
+  queryDataset(datasetId: string, query?: DatasetQuery): Promise<DatasetResult>;
 }
 ```
 
 `platformAdapter` 是应用唯一绑定点。当前指向 Mock 实现；接 Go 后应指向 `HttpPlatformAdapter`。页面组件不得直接依赖具体实现。
 
-后续可在保持调用方稳定的情况下扩展：
+后续可在保持调用方稳定的情况下继续扩展：
 
 ```ts
 interface PlatformAdapter {
@@ -27,7 +28,7 @@ interface PlatformAdapter {
   publishSource(draft: SourceDraft): Promise<DataSource>;
   runSource(sourceId: string): Promise<JobRun>;
   listRuns(sourceId?: string): Promise<JobRun[]>;
-  queryDataset(datasetId: string, query: DatasetQuery): Promise<DatasetResult>;
+  queryDataset(datasetId: string, query?: DatasetQuery): Promise<DatasetResult>;
   saveDashboard(config: DashboardConfig): Promise<DashboardConfig>;
 }
 ```

@@ -30,6 +30,7 @@ flowchart LR
 
 - 浅色和暗色后台界面、响应式与可折叠侧边栏
 - 基于 Efferd `dashboard-3` 的中性 inset 后台布局和紧凑数据卡片
+- 独立 CI/CD 交付大屏，支持项目、环境和 7/14/30 天筛选以及 JSON 报告导出
 - 元数据驱动的六步数据源接入向导
 - HTTP、MySQL、PostgreSQL、Jira、飞书、GitLab、CSV/Excel、Webhook、Agent 和脚本连接器定义
 - 连接测试、样本预览、Schema 推断、字段角色配置、同步策略和发布
@@ -62,6 +63,7 @@ npm run dev
 访问：
 
 - 平台总览：<http://localhost:3000/#overview>
+- CI/CD 大屏：<http://localhost:3000/#cicd>
 - 数据源：<http://localhost:3000/#sources>
 - Dataset：<http://localhost:3000/#datasets>
 - 运行记录：<http://localhost:3000/#runs>
@@ -119,6 +121,8 @@ components/platform/
   dashboards-view.tsx              Dashboard 编排器
   components-view.tsx              组件注册表
   widget-renderer.tsx               动态组件渲染
+components/dashboard/
+  cicd-dashboard.tsx                CI/CD 交付数据大屏
 lib/
   connector-definitions.ts         连接器表单和能力元数据
   platform-types.ts                TypeScript 数据契约

@@ -1,15 +1,19 @@
 import type {
   ConnectionTestResult,
   DataSource,
+  DatasetQuery,
+  DatasetResult,
   DatasetField,
   PreviewResult,
   SourceDraft,
 } from './platform-types';
+import { datasets } from './platform-data';
 
 export interface PlatformAdapter {
   testConnection(draft: SourceDraft): Promise<ConnectionTestResult>;
   previewSource(draft: SourceDraft): Promise<PreviewResult>;
   publishSource(draft: SourceDraft): Promise<DataSource>;
+  queryDataset(datasetId: string, query?: DatasetQuery): Promise<DatasetResult>;
 }
 
 const wait = (milliseconds: number) =>
@@ -134,6 +138,31 @@ export const mockPlatformAdapter: PlatformAdapter = {
       syncMode: draft.syncMode,
       cursorField: draft.cursorField || undefined,
       schema: draft.fields,
+    };
+  },
+
+  async queryDataset(datasetId, query = {}) {
+    await wait(180);
+    const dataset = datasets.find((item) => item.id === datasetId);
+    if (!dataset) throw new Error(`Dataset ${datasetId} 不存在`);
+
+    const filtered = dataset.rows.filter((row) =>
+      Object.entries(query.filters ?? {}).every(
+        ([field, expected]) => row[field] === expected,
+      ),
+    );
+    const limit = query.limit ?? 500;
+    return {
+      datasetId: dataset.id,
+      datasetVersion: dataset.version,
+      snapshotId: `mock-${dataset.id}-20260913`,
+      snapshotAt: '2026-09-13T16:42:00+08:00',
+      fields: dataset.fields,
+      rows: filtered.slice(0, limit),
+      page: {
+        limit,
+        nextCursor: filtered.length > limit ? String(limit) : null,
+      },
     };
   },
 };

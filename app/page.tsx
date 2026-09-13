@@ -13,6 +13,7 @@ import {
   Moon,
   Plus,
   PlugZap,
+  Rocket,
   Search,
   Sparkles,
   Sun,
@@ -43,6 +44,7 @@ import { PlatformOverview } from '@/components/platform/platform-overview';
 import { RunsView } from '@/components/platform/runs-view';
 import { SourcesView } from '@/components/platform/sources-view';
 import { downloadText } from '@/components/dashboard/case-table';
+import { CicdDashboard } from '@/components/dashboard/cicd-dashboard';
 import { initialDashboards, initialSources } from '@/lib/platform-data';
 import type { DashboardConfig, DataSource } from '@/lib/platform-types';
 
@@ -56,6 +58,7 @@ const navigation = [
   { id: 'sources', label: '数据源', icon: PlugZap, group: 'platform' },
   { id: 'datasets', label: 'Datasets', icon: Database, group: 'platform' },
   { id: 'runs', label: '运行记录', icon: Activity, group: 'platform' },
+  { id: 'cicd', label: 'CI/CD 大屏', icon: Rocket, group: 'display' },
   { id: 'dashboards', label: '大屏管理', icon: Braces, group: 'display' },
   { id: 'components', label: '组件注册表', icon: Blocks, group: 'display' },
 ] as const;
@@ -168,6 +171,7 @@ const pageDescriptions: Record<PageId, string> = {
   sources: '管理连接器、调度规则和密钥引用',
   datasets: '定义字段契约、查询协议、权限与数据血缘',
   runs: '查看采集、转换和快照生成任务',
+  cicd: '构建、测试、发布与部署的交付运行态势',
   dashboards: '选择 Dataset、映射字段并发布配置化大屏',
   components: '管理通用组件的输入契约和可用能力',
 };
@@ -263,39 +267,43 @@ export default function Home() {
             </div>
           </header>
           <main className="workspace platform-workspace" id="content">
-            <div className="page-head">
-              <div>
-                <h1>
-                  {page === 'overview' ? '上午好，研发团队！👋' : current.label}
-                </h1>
-                <p className="subtitle">{pageDescriptions[page]}</p>
-              </div>
-              <div className="head-actions">
-                <span className="schema-version">Schema v1.0</span>
-                {page === 'overview' && (
+            {page !== 'cicd' && (
+              <div className="page-head">
+                <div>
+                  <h1>
+                    {page === 'overview'
+                      ? '上午好，研发团队！👋'
+                      : current.label}
+                  </h1>
+                  <p className="subtitle">{pageDescriptions[page]}</p>
+                </div>
+                <div className="head-actions">
+                  <span className="schema-version">Schema v1.0</span>
+                  {page === 'overview' && (
+                    <Button
+                      className="btn primary-action"
+                      onClick={() => go('dashboards')}
+                    >
+                      <Plus size={15} />
+                      新建大屏
+                    </Button>
+                  )}
                   <Button
-                    className="btn primary-action"
-                    onClick={() => go('dashboards')}
+                    variant="outline"
+                    className="btn"
+                    onClick={() =>
+                      downloadText(
+                        `insight-platform-${page}.json`,
+                        JSON.stringify({ sources, dashboards }, null, 2),
+                      )
+                    }
                   >
-                    <Plus size={15} />
-                    新建大屏
+                    <Download size={14} />
+                    导出配置
                   </Button>
-                )}
-                <Button
-                  variant="outline"
-                  className="btn"
-                  onClick={() =>
-                    downloadText(
-                      `insight-platform-${page}.json`,
-                      JSON.stringify({ sources, dashboards }, null, 2),
-                    )
-                  }
-                >
-                  <Download size={14} />
-                  导出配置
-                </Button>
+                </div>
               </div>
-            </div>
+            )}
             {page === 'overview' && (
               <PlatformOverview go={(id) => go(id as PageId)} />
             )}{' '}
@@ -304,6 +312,7 @@ export default function Home() {
             )}{' '}
             {page === 'datasets' && <DatasetsView />}{' '}
             {page === 'runs' && <RunsView />}{' '}
+            {page === 'cicd' && <CicdDashboard />}{' '}
             {page === 'dashboards' && (
               <DashboardsView dashboards={dashboards} onSave={saveDashboard} />
             )}{' '}

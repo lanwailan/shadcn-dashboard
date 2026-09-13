@@ -103,6 +103,21 @@ export type PreviewResult = {
   totalEstimate: number;
 };
 
+export type DatasetQuery = {
+  filters?: Record<string, string | number | boolean>;
+  limit?: number;
+};
+
+export type DatasetResult = {
+  datasetId: string;
+  datasetVersion: string;
+  snapshotId: string;
+  snapshotAt: string;
+  fields: DatasetField[];
+  rows: Record<string, string | number | boolean>[];
+  page: { limit: number; nextCursor: string | null };
+};
+
 export type ComponentType =
   | 'metric'
   | 'barChart'
